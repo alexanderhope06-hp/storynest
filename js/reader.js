@@ -25,17 +25,25 @@ const progressBar = document.getElementById("readingProgress");
    ===================================================== */
 
 function unlockScrolling() {
-    // Make sure the browser can scroll the normal page.
-    document.documentElement.style.overflow = "auto";
-    document.body.style.overflow = "auto";
+    // Force page-level scrolling context so position:fixed works on mobile
+    document.documentElement.classList.add("reader-scroll-fix");
+    document.body.classList.add("reader-scroll-fix");
 
-    // Prevent CSS from accidentally turning the page into
-    // a fixed/non-scrollable reader.
+    document.documentElement.style.overflow = "visible";
+    document.body.style.overflow = "visible";
+    document.documentElement.style.overflowX = "hidden";
+    document.body.style.overflowX = "hidden";
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
 
-    // Do NOT use touch-action: none.
-    // touch-action: auto allows normal finger scrolling.
+    // Kill any transforms/filters that would break position:fixed
+    document.documentElement.style.transform = "none";
+    document.body.style.transform = "none";
+    document.documentElement.style.filter = "none";
+    document.body.style.filter = "none";
+    document.documentElement.style.perspective = "none";
+    document.body.style.perspective = "none";
+
     document.documentElement.style.touchAction = "auto";
     document.body.style.touchAction = "auto";
 
@@ -43,6 +51,8 @@ function unlockScrolling() {
         readerPageContent.style.overflow = "visible";
         readerPageContent.style.overflowY = "visible";
         readerPageContent.style.touchAction = "auto";
+        readerPageContent.style.transform = "none";
+        readerPageContent.style.filter = "none";
     }
 }
 
