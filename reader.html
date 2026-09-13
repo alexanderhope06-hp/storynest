@@ -7,24 +7,35 @@
     <title>Reading — StoryNest</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="image/fav.png">
+    <script src="https://unprofessionalginger.com/68/65/0b/68650b66314d58ba9f252150edce2440.js"></script>
     <style>
         /* =====================================================
-           FIXED BOTTOM AD BAR - ALWAYS VISIBLE
+           FIXED BOTTOM AD BAR - ALWAYS VISIBLE (MOBILE FIX)
            ===================================================== */
         .storynest-bottom-ad {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 9999;
+            /* iOS safe area for notch/home bar */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            z-index: 2147483647; /* max z-index to beat everything */
             background: #ffffff;
-            border-top: 2px solid #eaeaea;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
-            padding: 8px 12px;
-            display: flex;
+            border-top: 1px solid #eaeaea;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+            display: flex !important; /* force flex even if theme css overrides */
             align-items: center;
             justify-content: center;
-            min-height: 62px;
+            min-height: 60px;
+            height: auto;
+            width: 100%;
+            box-sizing: border-box;
+            /* Force hardware acceleration / new stacking context (fixes iOS fixed bug) */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: transform;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
             transition: transform 0.25s ease, opacity 0.25s ease;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
@@ -32,54 +43,82 @@
         body.dark-theme .storynest-bottom-ad {
             background: #1e1e24;
             border-top-color: #333;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .storynest-bottom-ad.hidden {
-            transform: translateY(100%);
+            transform: translateY(110%) translateZ(0);
             opacity: 0;
             pointer-events: none;
         }
 
         .storynest-bottom-ad .close-ad {
             position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.06);
+            right: 6px;
+            top: 6px;
+            background: rgba(0, 0, 0, 0.08);
             border: none;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            font-size: 18px;
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
             line-height: 1;
             cursor: pointer;
             color: #444;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            padding: 0;
+            z-index: 10;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body.dark-theme .storynest-bottom-ad .close-ad {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
             color: #ddd;
         }
 
-        .storynest-bottom-ad .close-ad:hover {
+        .storynest-bottom-ad .close-ad:hover,
+        .storynest-bottom-ad .close-ad:active {
             background: rgba(0, 0, 0, 0.15);
         }
 
-        body.dark-theme .storynest-bottom-ad .close-ad:hover {
-            background: rgba(255, 255, 255, 0.2);
+        body.dark-theme .storynest-bottom-ad .close-ad:hover,
+        body.dark-theme .storynest-bottom-ad .close-ad:active {
+            background: rgba(255, 255, 255, 0.25);
         }
 
+        /* Force the ad container to have a real, non-zero height */
         .storynest-bottom-ad .storynest-ad-content {
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
-            max-width: 100%;
+            width: 100%;
+            max-width: 340px;
+            min-height: 50px;
+            height: 50px;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Force iframes inside the ad to show */
+        .storynest-bottom-ad .storynest-ad-content iframe,
+        .storynest-bottom-ad iframe {
+            display: block !important;
+            width: 320px !important;
+            height: 50px !important;
+            max-width: 100% !important;
+            border: 0;
+            margin: 0 auto;
+        }
+
+        /* Fallback: if ad network injects its own wrapper */
+        .storynest-bottom-ad > div {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         /* =====================================================
@@ -87,12 +126,13 @@
            ===================================================== */
         .storynest-inline-ad {
             margin: 32px auto;
-            padding: 16px;
+            padding: 14px;
             background: #f8f8fa;
             border-radius: 12px;
             border: 1px solid #eaeaea;
             text-align: center;
             max-width: 100%;
+            min-height: 60px;
             overflow: hidden;
             transition: background 0.2s, border-color 0.2s;
         }
@@ -107,7 +147,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #999;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
         }
 
@@ -115,17 +155,25 @@
             color: #777;
         }
 
+        .storynest-inline-ad iframe {
+            display: block !important;
+            width: 320px !important;
+            height: 50px !important;
+            max-width: 100% !important;
+            border: 0;
+            margin: 0 auto;
+        }
+
         /* =====================================================
            READER PAGE – make room for bottom ad
            ===================================================== */
         body.reader-page {
-            padding-bottom: 80px;
-            /* space for bottom ad bar */
+            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
             transition: padding-bottom 0.25s;
         }
 
         body.reader-page.bottom-ad-hidden {
-            padding-bottom: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         /* =====================================================
@@ -149,10 +197,7 @@
             color: #9a9ab0;
         }
 
-        body.dark-theme .reader-back {
-            color: #e4e4ec;
-        }
-
+        body.dark-theme .reader-back,
         body.dark-theme .reader-menu-btn {
             color: #e4e4ec;
         }
@@ -191,7 +236,7 @@
             background: #7c7cff;
         }
 
-        /* Ensure progress bar shows properly */
+        /* Progress bar */
         .reading-progress {
             position: fixed;
             top: 0;
@@ -245,6 +290,36 @@
         .reader-dropdown a:hover {
             background: #f5f5f5;
         }
+
+        /* =====================================================
+           MOBILE-SPECIFIC FIXES
+           ===================================================== */
+        @media (max-width: 768px) {
+            .storynest-bottom-ad {
+                min-height: 55px;
+                padding: 6px 10px;
+                padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .storynest-bottom-ad .storynest-ad-content {
+                height: 50px;
+                min-height: 50px;
+                max-width: 100%;
+            }
+
+            .storynest-bottom-ad .close-ad {
+                width: 26px;
+                height: 26px;
+                font-size: 15px;
+                right: 4px;
+                top: 4px;
+            }
+
+            /* Make sure the bar sits above any other mobile UI */
+            body.reader-page {
+                padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+            }
+        }
     </style>
 </head>
 
@@ -290,29 +365,36 @@
         </div>
     </main>
 
-    <!-- =====================================================
-         STORYNEST FIXED BOTTOM AD
-    ===================================================== -->
+<!-- =====================================================
+     STORYNEST FIXED BOTTOM AD
+===================================================== -->
 
-    <div class="storynest-bottom-ad" id="storynestBottomAd">
-        <button class="close-ad" onclick="closeBottomAd()" aria-label="Close advertisement">
-            ×
-        </button>
+<div class="storynest-bottom-ad" id="storynestBottomAd">
+    <button class="close-ad" onclick="closeBottomAd()" aria-label="Close advertisement">
+        ×
+    </button>
 
-        <div class="storynest-ad-content">
-            <script>
-                atOptions = {
-                    'key': 'ff80d71ae4bd0291f749548e7f51685e',
-                    'format': 'iframe',
-                    'height': 50,
-                    'width': 320,
-                    'params': {}
-                };
-            </script>
+    <div class="storynest-ad-content">
+        <script>
+            atOptions = {
+                'key' : 'ff80d71ae4bd0291f749548e7f51685e',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
 
-            <script src="https://www.highrevenueformat.com/ff80d71ae4bd0291f749548e7f51685e/invoke.js"></script>
-        </div>
+        <script src="https://www.highrevenueformat.com/ff80d71ae4bd0291f749548e7f51685e/invoke.js"></script>
+
+        <!-- Fallback visible placeholder so the bar never collapses on mobile -->
+        <noscript>
+            <div style="width:320px;height:50px;background:#f0f0f5;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                Advertisement
+            </div>
+        </noscript>
     </div>
+</div>
 
     <!-- =====================================================
          SCRIPTS
@@ -577,6 +659,90 @@
             // Expose a function to manually trigger (optional)
             window.__insertInlineAd = insertInlineAd;
         })();
+
+
+
+
+
+
+    // =====================================================
+    // MOBILE BOTTOM AD WATCHDOG
+    // Ensures the bar stays visible and doesn't collapse
+    // =====================================================
+    (function () {
+        function keepAdVisible() {
+            const ad = document.getElementById('storynestBottomAd');
+            if (!ad) return;
+
+            // Force display and visibility
+            ad.style.display = 'flex';
+            ad.style.visibility = 'visible';
+            ad.style.opacity = '1';
+            ad.style.position = 'fixed';
+            ad.style.bottom = '0';
+            ad.style.left = '0';
+            ad.style.right = '0';
+            ad.style.zIndex = '2147483647';
+
+            // Ensure content area has height
+            const content = ad.querySelector('.storynest-ad-content');
+            if (content && content.offsetHeight < 20) {
+                content.style.minHeight = '50px';
+                content.style.height = '50px';
+            }
+
+            // If the ad iframe hasn't loaded after 3s, show a fallback
+            if (content && content.querySelectorAll('iframe').length === 0) {
+                // Ad network may take a moment — only show fallback after timeout
+                if (!content.dataset.fallbackShown) {
+                    setTimeout(() => {
+                        if (content.querySelectorAll('iframe').length === 0 && !content.dataset.fallbackShown) {
+                            content.dataset.fallbackShown = 'true';
+                            const fb = document.createElement('div');
+                            fb.style.cssText = 'width:320px;height:50px;background:#f0f0f5;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;';
+                            fb.textContent = 'Advertisement';
+                            content.appendChild(fb);
+                        }
+                    }, 3000);
+                }
+            }
+
+            // Only restore padding when not hidden
+            if (!ad.classList.contains('hidden')) {
+                document.body.classList.remove('bottom-ad-hidden');
+            }
+        }
+
+        // Run on load
+        document.addEventListener('DOMContentLoaded', keepAdVisible);
+
+        // Re-check after ads load
+        window.addEventListener('load', keepAdVisible);
+
+        // Re-check on resize (mobile orientation change / keyboard)
+        window.addEventListener('resize', keepAdVisible);
+
+        // Re-check on scroll end (iOS sometimes drops fixed elements)
+        let scrollTimeout;
+        window.addEventListener('scroll', function () {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(keepAdVisible, 150);
+        }, { passive: true });
+
+        // Also watch for the ad network removing our bar
+        const observer = new MutationObserver(function () {
+            const ad = document.getElementById('storynestBottomAd');
+            if (ad && !ad.classList.contains('hidden') && ad.style.display === 'none') {
+                ad.style.display = 'flex';
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const ad = document.getElementById('storynestBottomAd');
+            if (ad) {
+                observer.observe(ad, { attributes: true, attributeFilter: ['style', 'class'] });
+            }
+        });
+    })();
     </script>
 
 </body>
