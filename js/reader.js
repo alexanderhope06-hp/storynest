@@ -25,23 +25,22 @@ const progressBar = document.getElementById("readingProgress");
    ===================================================== */
 
 function unlockScrolling() {
-    // Force page-level scrolling context so position:fixed works on mobile
     document.documentElement.classList.add("reader-scroll-fix");
     document.body.classList.add("reader-scroll-fix");
 
     document.documentElement.style.overflow = "visible";
-    document.body.style.overflow = "visible";
     document.documentElement.style.overflowX = "hidden";
-    document.body.style.overflowX = "hidden";
     document.documentElement.style.overflowY = "auto";
+
+    document.body.style.overflow = "visible";
+    document.body.style.overflowX = "hidden";
     document.body.style.overflowY = "auto";
 
-    // Kill any transforms/filters that would break position:fixed
     document.documentElement.style.transform = "none";
-    document.body.style.transform = "none";
     document.documentElement.style.filter = "none";
-    document.body.style.filter = "none";
     document.documentElement.style.perspective = "none";
+    document.body.style.transform = "none";
+    document.body.style.filter = "none";
     document.body.style.perspective = "none";
 
     document.documentElement.style.touchAction = "auto";
@@ -151,9 +150,7 @@ function displayChapter() {
         `${chapter.title || "Chapter " + chapter.chapter_number} — ${novel.title}`;
 
 
-    // Make absolutely sure scrolling remains unlocked.
     unlockScrolling();
-
 
     renderChapter(chapter);
 
@@ -173,6 +170,7 @@ function renderChapter(chapter) {
     const title = chapter.title || "";
 
 
+    // Split into paragraphs (blank-line separated)
     const paragraphs = content
         .split(/\n\s*\n/)
         .map(p => p.trim())
@@ -183,25 +181,115 @@ function renderChapter(chapter) {
         `<h1 class="page-chapter-title">${escapeHTML(title)}</h1>`;
 
 
-    for (const p of paragraphs) {
+    /* =================================================
+       MID-CHAPTER AD DECISION (character-based)
 
-        // Preserve line breaks inside paragraphs.
+       Rules:
+         - Skip ad if chapter is shorter than MIN_CHARS_FOR_AD
+         - Otherwise inject ONE ad after the paragraph that
+           crosses the 50% character mark
+    ================================================= */
+
+    const MIN_CHARS_FOR_AD = 2000;
+
+    // Total characters in the chapter (excluding title)
+    const totalChars = paragraphs.reduce(
+        (sum, p) => sum + p.length,
+        0
+    );
+
+    // Decide whether to inject at all
+    const shouldInjectAd =
+        paragraphs.length >= 3 &&
+        totalChars >= MIN_CHARS_FOR_AD;
+
+    // Find the paragraph index to insert after
+    let insertAfterIndex = -1;
+
+    if (shouldInjectAd) {
+
+        const halfway = totalChars / 2;
+        let running = 0;
+
+        for (let i = 0; i < paragraphs.length; i++) {
+
+            running += paragraphs[i].length;
+
+            if (running >= halfway) {
+                insertAfterIndex = i;
+                break;
+            }
+        }
+
+        // Safety: never insert before paragraph 1 or
+        // after the last paragraph
+        if (insertAfterIndex < 1) {
+            insertAfterIndex = 1;
+        }
+
+        if (insertAfterIndex >= paragraphs.length - 1) {
+            insertAfterIndex = paragraphs.length - 2;
+        }
+    }
+
+    let adInjected = false;
+
+
+    /* =================================================
+       BUILD PARAGRAPHS + INJECT AD
+    ================================================= */
+
+    paragraphs.forEach((p, index) => {
+
         const formattedParagraph =
             escapeHTML(p).replace(/\n/g, "<br>");
 
         html += `<p>${formattedParagraph}</p>`;
-    }
+
+
+        if (
+            shouldInjectAd &&
+            !adInjected &&
+            index === insertAfterIndex
+        ) {
+
+            html += `
+                <div class="storynest-in-content-ad">
+                    <script type="text/javascript">
+                        atOptions = {
+                            'key' : '665e254e1c5fe98bcbd641aa25f400df',
+                            'format' : 'iframe',
+                            'height' : 250,
+                            'width' : 300,
+                            'params' : {}
+                        };
+                    <\/script>
+                    <script type="text/javascript" src="https://unprofessionalginger.com/665e254e1c5fe98bcbd641aa25f400df/invoke.js"><\/script>
+                </div>
+            `;
+
+            adInjected = true;
+        }
+
+    });
 
 
     readerPageContent.innerHTML = html;
 
 
-    // Make sure the content itself is not a scroll container.
+    // innerHTML does NOT execute <script> tags — re-create them manually
+    if (adInjected) {
+
+        injectAdScripts(readerPageContent);
+
+    }
+
+
     readerPageContent.style.overflow = "visible";
     readerPageContent.style.overflowY = "visible";
 
 
-    // Apply saved font size.
+    // Apply saved font size
     const savedSize =
         localStorage.getItem("readerFontSize");
 
@@ -209,6 +297,36 @@ function renderChapter(chapter) {
         savedSize ? parseInt(savedSize) : 18;
 
     applyFontSizeToContent(fontSize);
+}
+
+
+/* =====================================================
+   INJECT AD SCRIPTS (needed because innerHTML
+   does not execute <script> tags)
+   ===================================================== */
+
+function injectAdScripts(container) {
+
+    if (!container) return;
+
+	if (typeof isAdFree === 'function' && isAdFree()) return;
+
+    container
+        .querySelectorAll(".storynest-in-content-ad script")
+        .forEach(oldScript => {
+
+            const newScript =
+                document.createElement("script");
+
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+                newScript.async = true;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
 }
 
 
@@ -242,7 +360,6 @@ function updateProgress() {
         `${Math.min(100, Math.max(0, progress))}%`;
 
 
-    // Save reading position.
     if (novelId) {
 
         localStorage.setItem(
@@ -253,11 +370,6 @@ function updateProgress() {
     }
 }
 
-
-/*
-   Passive scroll listener.
-   This NEVER blocks scrolling.
-*/
 
 window.addEventListener(
     "scroll",
@@ -311,7 +423,6 @@ function previousChapter() {
 
 document.addEventListener("keydown", function (event) {
 
-    // Don't interfere with text fields.
     if (
         event.target.tagName === "INPUT" ||
         event.target.tagName === "TEXTAREA" ||
@@ -320,10 +431,6 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
-
-    /* ---------------------------------------------
-       Chapter navigation
-       --------------------------------------------- */
 
     if (event.key === "ArrowRight") {
 
@@ -345,10 +452,6 @@ document.addEventListener("keydown", function (event) {
     }
 
 
-    /* ---------------------------------------------
-       Scroll down
-       --------------------------------------------- */
-
     if (
         event.key === "ArrowDown" ||
         event.key === " " ||
@@ -366,10 +469,6 @@ document.addEventListener("keydown", function (event) {
     }
 
 
-    /* ---------------------------------------------
-       Scroll up
-       --------------------------------------------- */
-
     if (
         event.key === "ArrowUp" ||
         event.key === "PageUp"
@@ -386,10 +485,6 @@ document.addEventListener("keydown", function (event) {
     }
 
 
-    /* ---------------------------------------------
-       Home
-       --------------------------------------------- */
-
     if (event.key === "Home") {
 
         event.preventDefault();
@@ -402,10 +497,6 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
-
-    /* ---------------------------------------------
-       End
-       --------------------------------------------- */
 
     if (event.key === "End") {
 
@@ -423,8 +514,7 @@ document.addEventListener("keydown", function (event) {
 
 
 /* =====================================================
-   MOBILE SWIPE
-   CHAPTER CHANGE ONLY
+   MOBILE SWIPE (chapter change only)
    ===================================================== */
 
 let touchStartX = 0;
@@ -438,18 +528,12 @@ document.addEventListener(
 
         if (!event.touches.length) return;
 
-        touchStartX =
-            event.touches[0].clientX;
-
-        touchStartY =
-            event.touches[0].clientY;
-
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
         touchStartTime = Date.now();
 
     },
-    {
-        passive: true
-    }
+    { passive: true }
 );
 
 
@@ -459,63 +543,30 @@ document.addEventListener(
 
         if (!event.changedTouches.length) return;
 
+        const touch = event.changedTouches[0];
 
-        const touch =
-            event.changedTouches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+        const duration = Date.now() - touchStartTime;
 
-
-        const deltaX =
-            touch.clientX - touchStartX;
-
-
-        const deltaY =
-            touch.clientY - touchStartY;
-
-
-        const duration =
-            Date.now() - touchStartTime;
-
-
-        /*
-           IMPORTANT:
-
-           Vertical movement is ignored.
-
-           This means normal finger scrolling
-           continues to work.
-        */
 
         if (Math.abs(deltaX) < 80) return;
 
-        if (
-            Math.abs(deltaX) <
-            Math.abs(deltaY) * 1.5
-        ) {
+        if (Math.abs(deltaX) < Math.abs(deltaY) * 1.5) {
             return;
         }
 
         if (duration > 600) return;
 
 
-        /*
-           Only a quick horizontal swipe
-           changes the chapter.
-        */
-
         if (deltaX < 0) {
-
             nextChapter();
-
         } else {
-
             previousChapter();
-
         }
 
     },
-    {
-        passive: true
-    }
+    { passive: true }
 );
 
 
@@ -528,11 +579,7 @@ function updateURL() {
     const newURL =
         `reader.html?id=${encodeURIComponent(novelId)}&chapter=${chapterNumber}`;
 
-    window.history.replaceState(
-        {},
-        "",
-        newURL
-    );
+    window.history.replaceState({}, "", newURL);
 }
 
 
@@ -546,7 +593,6 @@ window.addEventListener(
 
         const currentParams =
             new URLSearchParams(window.location.search);
-
 
         const newChapter =
             Number(currentParams.get("chapter")) || 1;
@@ -580,16 +626,10 @@ function restorePosition() {
         );
 
 
-    /*
-       Wait until the chapter has been rendered
-       before restoring the position.
-    */
-
     requestAnimationFrame(() => {
 
         requestAnimationFrame(() => {
 
-            // Make sure page scrolling is unlocked.
             unlockScrolling();
 
 
@@ -597,7 +637,6 @@ function restorePosition() {
 
                 const pos =
                     parseInt(saved, 10) || 0;
-
 
                 window.scrollTo({
                     top: pos,
@@ -632,18 +671,12 @@ function applyFontSizeToContent(size) {
 
     if (!readerPageContent) return;
 
-
-    readerPageContent.style.fontSize =
-        size + "px";
-
+    readerPageContent.style.fontSize = size + "px";
 
     readerPageContent
         .querySelectorAll("p")
         .forEach(p => {
-
-            p.style.fontSize =
-                size + "px";
-
+            p.style.fontSize = size + "px";
         });
 }
 
@@ -656,14 +689,9 @@ window.addEventListener(
     "readerFontSizeChanged",
     function (e) {
 
-        applyFontSizeToContent(
-            e.detail.size
-        );
+        applyFontSizeToContent(e.detail.size);
 
-        setTimeout(
-            updateProgress,
-            100
-        );
+        setTimeout(updateProgress, 100);
 
     }
 );
@@ -676,8 +704,7 @@ window.addEventListener(
 function showError(message) {
 
     if (readerNovelTitle) {
-        readerNovelTitle.textContent =
-            "StoryNest";
+        readerNovelTitle.textContent = "StoryNest";
     }
 
 
@@ -732,11 +759,9 @@ function showError(message) {
 
 function escapeHTML(value) {
 
-    const div =
-        document.createElement("div");
+    const div = document.createElement("div");
 
-    div.textContent =
-        value ?? "";
+    div.textContent = value ?? "";
 
     return div.innerHTML;
 }

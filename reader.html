@@ -11,111 +11,28 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="icon" type="image/png" href="image/fav.png">
 
-<!-- =====================================================
-     READER SCROLL FIX
-     ===================================================== -->
-<style>
-    /* Allow normal scrolling on ALL devices */
-    html {
-        height: auto;
-        min-height: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
+</header>
 
-    body {
-        height: auto;
-        min-height: 100vh;
-        margin: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
+<!-- ================= TOP LEADERBOARD AD (728x90) ================= -->
+<div class="storynest-top-ad">
+    <div class="storynest-top-ad-inner">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '6e386924edca4892ed33ab2caa248000',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="https://unprofessionalginger.com/6e386924edca4892ed33ab2caa248000/invoke.js"></script>
+    </div>
+</div>
 
-    /* Prevent old reader CSS from locking the page */
-    .reader-page {
-        height: auto !important;
-        min-height: 100vh;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-
-    /* Main reader area must grow with the chapter */
-    .reader-container {
-        height: auto !important;
-        min-height: 0 !important;
-        overflow: visible !important;
-    }
-
-    .reader-page-content {
-        height: auto !important;
-        min-height: 0 !important;
-        overflow: visible !important;
-    }
-
-    .story {
-        height: auto !important;
-        max-height: none !important;
-        overflow: visible !important;
-    }
-
-    /* Chapter text should never create its own locked box */
-    .story p {
-        height: auto;
-        overflow: visible;
-    }
-
-    /* Keep header at the top without locking the whole page */
-    .reader-header {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-    }
-
-    /* Progress bar stays visible while scrolling */
-    .reading-progress {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 2000;
-    }
-
-    /* Mobile */
-    @media (max-width: 767px) {
-        html,
-        body {
-            height: auto !important;
-            min-height: 100%;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .reader-page {
-            height: auto !important;
-            overflow-y: auto !important;
-        }
-
-        .reader-container {
-            height: auto !important;
-            overflow: visible !important;
-        }
-
-        .reader-page-content {
-            height: auto !important;
-            overflow: visible !important;
-        }
-
-        .story {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-        }
-    }
-</style>
 
 </head>
 
-<body>
+<body class="reader-page">
 
 <!-- =====================================================
      READER HEADER
@@ -140,6 +57,9 @@
                 Chapter 1
             </span>
         </div>
+
+	<!-- NEW: ad-free countdown badge -->
+	<span id="adFreeBadge" class="ad-free-badge" style="display:none;"></span>
 
     </div>
 
@@ -179,6 +99,11 @@
                 🌙 Dark Mode
             </a>
 
+	    <!-- ad -->
+            <a href="https://unprofessionalginger.com/kpmqpcbd?key=337164613e9e4f3099a975553e256fa2" onclick="unlockAdFree(); return false;" id="adFreeBtn">
+                🎁 Get Ad-Free (15  min)
+            </a>
+
         </div>
 
     </div>
@@ -201,27 +126,26 @@
 ===================================================== -->
 
 <main class="reader-container">
-
-    <div
-        class="reader-page-content"
-        id="readerPageContent">
-
-        <h1 id="chapterTitle">
-            Loading...
-        </h1>
-
-        <div
-            class="story"
-            id="storyContent">
-
-            <p>
-                Loading chapter...
-            </p>
-
+    <div class="reader-page-content" id="readerPageContent">
+        <h1 id="chapterTitle">Loading...</h1>
+        <div class="story" id="storyContent">
+            <p>Loading chapter...</p>
         </div>
 
+        <!-- ================= IN-CONTENT AD (300x250) ================= -->
+        <div class="storynest-in-content-ad">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '665e254e1c5fe98bcbd641aa25f400df',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://unprofessionalginger.com/665e254e1c5fe98bcbd641aa25f400df/invoke.js"></script>
+        </div>
     </div>
-
 </main>
 
 
@@ -677,6 +601,181 @@
     console.log(
         '📖 StoryNest reader loaded with normal scrolling.'
     );
+
+</script>
+
+
+<!-- ================= STICKY BOTTOM AD BAR ================= -->
+<div class="storynest-bottom-ad" id="storynestBottomAd">
+    <button class="close-ad" id="closeBottomAd" aria-label="Close advertisement">✕</button>
+    <div class="storynest-ad-content">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'ff80d71ae4bd0291f749548e7f51685e',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="https://www.highrevenueformat.com/ff80d71ae4bd0291f749548e7f51685e/invoke.js"></script>
+    </div>
+</div>
+
+<script>
+(function () {
+    var adBar = document.getElementById('storynestBottomAd');
+    var closeBtn = document.getElementById('closeBottomAd');
+    if (!adBar || !closeBtn) return;
+
+    if (sessionStorage.getItem('storynest_ad_closed') === '1') {
+        adBar.classList.add('hidden');
+        document.body.classList.add('bottom-ad-hidden');
+        return;
+    }
+
+    closeBtn.addEventListener('click', function () {
+        adBar.classList.add('hidden');
+        document.body.classList.add('bottom-ad-hidden');
+        sessionStorage.setItem('storynest_ad_closed', '1');
+    });
+})();
+
+
+
+// =====================================================
+// AD-FREE REWARD SYSTEM — Session-only, per-tab
+// =====================================================
+
+const AD_FREE_DURATION_MS = 15 * 60 * 1000;   // 15 minutes
+const AD_FREE_KEY = 'storynestAdFreeUntil';
+const SMARTPLINK_URL = 'https://www.highrevenueformat.com/YOUR_SMARTPLINK_HERE';
+
+let adFreeInterval = null;
+
+// --- Is ad-free active right now? ---
+function isAdFree() {
+    const until = parseInt(sessionStorage.getItem(AD_FREE_KEY) || '0', 10);
+    return Date.now() < until;
+}
+
+// --- Grant 15 minutes to THIS TAB ONLY ---
+function grantAdFree() {
+    const until = Date.now() + AD_FREE_DURATION_MS;
+    sessionStorage.setItem(AD_FREE_KEY, until);
+    applyAdFreeState();
+}
+
+// --- Clear the reward (used when tab unloads) ---
+function clearAdFree() {
+    sessionStorage.removeItem(AD_FREE_KEY);
+}
+
+// --- Apply visual state ---
+function applyAdFreeState() {
+    const active = isAdFree();
+
+    document.body.classList.toggle('ad-free-active', active);
+
+    const badge = document.getElementById('adFreeBadge');
+    if (badge) {
+        badge.style.display = active ? 'inline-flex' : 'none';
+        if (active) updateAdFreeBadge();
+    }
+
+    const btn = document.getElementById('adFreeBtn');
+    if (btn) {
+        btn.textContent = active
+            ? '⏱ Ad-Free Active'
+            : '🎁 Get Ad-Free (15 min)';
+    }
+
+    // Start / stop the countdown ticker
+    if (active && !adFreeInterval) {
+        adFreeInterval = setInterval(updateAdFreeBadge, 1000);
+    } else if (!active && adFreeInterval) {
+        clearInterval(adFreeInterval);
+        adFreeInterval = null;
+    }
+}
+
+// --- Update the countdown text ---
+function updateAdFreeBadge() {
+    const badge = document.getElementById('adFreeBadge');
+    if (!badge) return;
+
+    const until = parseInt(sessionStorage.getItem(AD_FREE_KEY) || '0', 10);
+    const remaining = until - Date.now();
+
+    if (remaining <= 0) {
+        clearAdFree();
+        applyAdFreeState();
+        return;
+    }
+
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    badge.textContent = `Ad-Free ${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// --- User clicked "Get Ad-Free" ---
+function unlockAdFree() {
+    if (isAdFree()) {
+        alert('You already have ad-free time active in this tab! Enjoy 🎉');
+        return;
+    }
+
+    const win = window.open(SMARTPLINK_URL, '_blank');
+
+    if (!win) {
+        alert('Please allow pop-ups for this site to unlock ad-free reading.');
+        return;
+    }
+
+    // Wait for the Smartlink tab to close
+    const check = setInterval(() => {
+        if (win.closed) {
+            clearInterval(check);
+            grantAdFree();
+            alert('🎉 Ad-free unlocked for 15 minutes in this tab!');
+        }
+    }, 800);
+
+    // Safety net — grant after 45s even if the tab stays open
+    setTimeout(() => {
+        clearInterval(check);
+        if (!isAdFree()) grantAdFree();
+    }, 45000);
+}
+
+// --- Initialize ---
+document.addEventListener('DOMContentLoaded', () => {
+    applyAdFreeState();
+});
+
+// --- CRITICAL: end reward when leaving the page ---
+// sessionStorage is per-tab, but this adds an extra guarantee:
+window.addEventListener('beforeunload', () => {
+    clearAdFree();
+});
+
+// Also end reward if the tab becomes hidden for too long (e.g. user switched tabs for 30+ min)
+let hiddenAt = null;
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        hiddenAt = Date.now();
+    } else {
+        // If the tab was hidden for more than 15 min, wipe the reward
+        if (hiddenAt && Date.now() - hiddenAt > AD_FREE_DURATION_MS) {
+            clearAdFree();
+        }
+        hiddenAt = null;
+        applyAdFreeState();
+    }
+});
+
+// Re-check state when the tab regains focus
+window.addEventListener('focus', applyAdFreeState);
 
 </script>
 
